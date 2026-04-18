@@ -158,9 +158,9 @@ export function MealPlannerView() {
                   ) : (
                     <ul className="space-y-3">
                       {missing.map((item, idx) => (
-                        <li key={idx} className="flex flex-col gap-1 rounded-xl border border-[#10120f] bg-[#10120f] p-3 text-sm">
-                          <span className="font-bold capitalize text-white">{item.name}</span>
-                          <span className="text-xs font-medium text-[rgba(255,255,255,0.62)]">{item.amounts}</span>
+                        <li key={idx} className="flex flex-col gap-1 rounded-xl border border-[#e8eaec] bg-[#f7faf7] p-3 text-sm">
+                          <span className="font-bold capitalize text-[#10120f]">{item.name}</span>
+                          <span className="text-xs font-medium text-muted-foreground">{item.amounts}</span>
                         </li>
                       ))}
                     </ul>
@@ -177,12 +177,12 @@ export function MealPlannerView() {
                   ) : (
                     <ul className="space-y-3">
                       {have.map((item, idx) => (
-                        <li key={idx} className="flex flex-col gap-1 rounded-xl border border-[#10120f] bg-[#10120f] p-3 text-sm opacity-100">
+                        <li key={idx} className="flex flex-col gap-1 rounded-xl border border-[#e8eaec] bg-[#f7faf7] p-3 text-sm opacity-100">
                           <div className="flex justify-between items-start gap-2">
-                            <span className="font-bold capitalize text-white line-through">{item.name}</span>
+                            <span className="font-bold capitalize text-[#10120f] line-through">{item.name}</span>
                             <span className="text-[10px] font-bold text-green-800 bg-green-200/70 px-2 py-0.5 rounded-sm">In Pantry</span>
                           </div>
-                          <span className="text-xs font-medium text-[rgba(255,255,255,0.62)]">{item.amounts}</span>
+                          <span className="text-xs font-medium text-muted-foreground">{item.amounts}</span>
                         </li>
                       ))}
                     </ul>

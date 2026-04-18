@@ -223,7 +223,7 @@ export function RecipeDetailsModal({
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: (idx % 10) * 0.05 }}
-                                className="group flex items-center gap-4 rounded-2xl border border-[#10120f] bg-[#10120f] p-4 transition-all"
+                                className="group flex items-center gap-4 rounded-2xl border border-[#e8eaec] bg-[#f7faf7] p-4 transition-all"
                               >
                                 <div className="h-12 w-12 shrink-0 rounded-xl bg-white p-2 transition-transform">
                                   <img
@@ -234,10 +234,10 @@ export function RecipeDetailsModal({
                                 />
                                 </div>
                                 <div className="flex flex-col min-w-0">
-                                  <span className="font-bold text-white truncate capitalize">
+                                  <span className="font-bold text-[#10120f] truncate capitalize">
                                     {ing.name}
                                   </span>
-                                  <span className="text-sm text-[rgba(255,255,255,0.62)]">
+                                  <span className="text-sm text-muted-foreground">
                                     {ing.amount} {ing.unit}
                                   </span>
                                 </div>
