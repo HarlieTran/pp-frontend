@@ -16,18 +16,21 @@ export const fetchMealPlanner = createAsyncThunk("mealPlanner/fetch", async () =
   return await fetchMealPlanFromApi() as MealPlanRecipe[];
 });
 
-export const addRecipeToPlan = createAsyncThunk("mealPlanner/add", async (recipe: MealPlanRecipe) => {
+export const addRecipeToPlan = createAsyncThunk("mealPlanner/add", async (recipe: MealPlanRecipe, { dispatch }) => {
   await addRecipeToMealPlanApi(recipe.id);
+  dispatch(fetchMealPlanner());
   return recipe;
 });
 
-export const removeRecipeFromPlan = createAsyncThunk("mealPlanner/remove", async (recipeId: string) => {
+export const removeRecipeFromPlan = createAsyncThunk("mealPlanner/remove", async (recipeId: string, { dispatch }) => {
   await removeRecipeFromMealPlanApi(recipeId);
+  dispatch(fetchMealPlanner());
   return recipeId;
 });
 
-export const clearPlan = createAsyncThunk("mealPlanner/clear", async () => {
+export const clearPlan = createAsyncThunk("mealPlanner/clear", async (_, { dispatch }) => {
   await clearMealPlanApi();
+  dispatch(fetchMealPlanner());
 });
 
 export const mealPlannerSlice = createSlice({
