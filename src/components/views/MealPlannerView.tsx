@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarDays, CheckCircle2, Circle, Trash2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { removeRecipeFromPlan, setShoppingListText, clearPlan } from "@/store/slices/mealPlannerSlice";
+import { cookRecipeThunk } from "@/store/slices/ingredientsSlice";
 
 export function MealPlannerView() {
   const dispatch = useAppDispatch();
@@ -59,6 +60,15 @@ export function MealPlannerView() {
 
   const handleRemove = (id: string) => {
     dispatch(removeRecipeFromPlan(id));
+  };
+
+  const handleCook = async (recipe: any) => {
+    if (recipe.sourceType === 'api') {
+      await dispatch(cookRecipeThunk({ recipeId: Number(recipe.id) }));
+    } else {
+      await dispatch(cookRecipeThunk({ ingredients: recipe.requiredIngredients }));
+    }
+    dispatch(removeRecipeFromPlan(recipe.id));
   };
 
   return (
@@ -127,9 +137,18 @@ export function MealPlannerView() {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground mt-4 font-medium">
-                            {recipe.requiredIngredients.length} Ingredients Checked
-                          </p>
+                          <div className="flex items-center justify-between mt-4">
+                            <p className="text-sm text-muted-foreground font-medium">
+                              {recipe.requiredIngredients.length} Ingredients Checked
+                            </p>
+                            <Button 
+                              size="sm" 
+                              className="rounded-full bg-[#10120f] hover:bg-[#10120f]/80 text-white font-bold"
+                              onClick={() => handleCook(recipe)}
+                            >
+                              Cook Recipe
+                            </Button>
+                          </div>
                         </div>
                       </Card>
                     ))}

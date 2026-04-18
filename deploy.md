@@ -8,14 +8,13 @@ This guide walks you through deploying the `pp-frontend` application to AWS Ampl
 2. Log into the **AWS Management Console** and navigate to **AWS Amplify**.
 3. Scroll down to the **Amplify Hosting** section and click **Get Started** or **Host your web app**.
 4. Select your Git provider (e.g., GitHub) and click **Continue**.
-5. Authorize AWS to access your repositories, then select your `PantryPay_V3` repository and the branch you want to deploy (e.g., `main`).
+5. Authorize AWS to access your repositories, then select your pantrypal frontend repository and the branch you want to deploy (e.g., `main`).
 
 ## Step 2: Configure Build Settings
 
-1. Since your frontend and backend are in the same repository, check the box for **"Connecting a monorepo?"**.
-2. Enter `pp-frontend` as the **Root directory**.
-3. AWS will automatically detect the `amplify.yml` file located in this folder.
-4. Expand the **Advanced Settings** section to configure Environment Variables. You must add the following variables so the build process can inject them into the production React app:
+1. Enter `pp-frontend`.
+2. AWS will automatically detect the `amplify.yml` file located in this folder.
+3. Expand the **Advanced Settings** section to configure Environment Variables. You must add the following variables so the build process can inject them into the production React app:
    - `VITE_API_URL` (Your AWS API Gateway URL)
    - `VITE_COGNITO_USER_POOL_ID` (Your AWS Cognito User Pool ID)
    - `VITE_COGNITO_CLIENT_ID` (Your AWS Cognito Client ID)
@@ -50,16 +49,3 @@ Ensure that:
 
 ---
 
-## Alternative: Deploy via Script (Without Git)
-
-If you prefer to deploy manually without pushing your code to Git, you can use the AWS CLI to package and deploy your frontend directly. 
-
-We have included a sample PowerShell script, `deploy-manual.ps1`, which automates this process:
-1. Compiles the React/Vite project (`npm run build`).
-2. Zips the resulting `dist` folder.
-3. Uploads the zip file to a temporary S3 bucket.
-4. Triggers AWS Amplify to deploy the uploaded zip file.
-
-**Usage:**
-1. Open `deploy-manual.ps1` and update the `$APP_ID` and `$S3_BUCKET` variables with your actual AWS Amplify App ID and an S3 staging bucket name.
-2. Run the script in your terminal: `.\deploy-manual.ps1`

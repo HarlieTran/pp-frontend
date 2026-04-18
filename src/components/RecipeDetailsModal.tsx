@@ -19,6 +19,7 @@ import {
 import { motion } from "framer-motion";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addRecipeToPlan, removeRecipeFromPlan } from "@/store/slices/mealPlannerSlice";
+import { cookRecipeThunk } from "@/store/slices/ingredientsSlice";
 
 interface RecipeDetailsProps {
   recipe: RecipeDetails | null;
@@ -56,6 +57,12 @@ export function RecipeDetailsModal({
         originalRecipe: recipe
       }));
     }
+  };
+
+  const handleCook = async () => {
+    if (!recipe) return;
+    await dispatch(cookRecipeThunk({ recipeId: recipe.id }));
+    onClose();
   };
 
   return (
@@ -330,6 +337,14 @@ export function RecipeDetailsModal({
                           onClick={toggleMealPlan}
                         >
                           {isPlanned ? "Planned" : "Add to Plan"}
+                        </Button>
+                        <Button
+                          variant="default"
+                          size="lg"
+                          className="rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-8"
+                          onClick={handleCook}
+                        >
+                          Cook & Update Pantry
                         </Button>
                         <Button
                           asChild

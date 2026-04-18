@@ -68,6 +68,16 @@ export const removeIngredient = createAsyncThunk(
   }
 );
 
+export const cookRecipeThunk = createAsyncThunk(
+  "ingredients/cookRecipe",
+  async (payload: { recipeId?: number; ingredients?: any[]; servingsUsed?: number }, { dispatch }) => {
+    const data = await apiPost("/recipes/cook", payload);
+    // Fetch fresh pantry state after cook deductions
+    dispatch(fetchPantry());
+    return data;
+  }
+);
+
 export const categorizeIngredient = (name: string): string => {
   const lowerName = name.toLowerCase();
   
