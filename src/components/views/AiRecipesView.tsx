@@ -20,11 +20,14 @@ export function AiRecipesView() {
     dispatch(fetchAiRecipes());
   };
 
-  const isPlanned = (title: string) => plannedRecipes.some(r => r.id === title);
+  const isPlanned = (title: string) => plannedRecipes.some(r => r.title === title);
 
   const toggleMealPlan = (recipe: AiRecipe) => {
     if (isPlanned(recipe.title)) {
-      dispatch(removeRecipeFromPlan(recipe.title));
+      const plannedItem = plannedRecipes.find(r => r.title === recipe.title);
+      if (plannedItem) {
+        dispatch(removeRecipeFromPlan(plannedItem.id));
+      }
     } else {
       const required = recipe.ingredients.map(ing => ({
         name: ing.name,
@@ -130,8 +133,9 @@ export function AiRecipesView() {
                             loading="lazy"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-[#fcfcfc]">
-                            <ChefHat className="h-12 w-12 text-[rgba(16,18,15,0.24)]" />
+                          <div className="flex h-full w-full flex-col items-center justify-center bg-muted/20 animate-pulse">
+                            <Sparkles className="h-8 w-8 text-primary/40 mb-2" />
+                            <span className="text-xs font-semibold text-muted-foreground/60 tracking-wider uppercase">Cooking photo...</span>
                           </div>
                         )}
                         <div className="absolute inset-x-0 bottom-0 bg-black/60 p-6 pt-16">

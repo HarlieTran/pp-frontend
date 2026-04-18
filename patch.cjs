@@ -1,13 +1,34 @@
 const fs = require('fs');
-const file = 'src/store/slices/mealPlannerSlice.ts';
-let content = fs.readFileSync(file, 'utf8');
+let code = fs.readFileSync('src/store/slices/mealPlannerSlice.ts', 'utf8');
 
-content = content.replace(/async \(recipe: MealPlanRecipe\) => {/g, 'async (recipe: MealPlanRecipe, { dispatch }) => {');
-content = content.replace(/await addRecipeToMealPlanApi\(recipe.id\);/g, 'await addRecipeToMealPlanApi(recipe.id);\n  dispatch(fetchMealPlanner());');
+const target = `export const addRecipeToPlan = createAsyncThunk("mealPlanner/add", async (recipe: MealPlanRecipe, { dispatch }) => {
+  await addRecipeToMealPlanApi(recipe.id);
+  dispatch(fetchMealPlanner());
+  return recipe;
+});`;
 
-content = content.replace(/async \(recipeId: string\) => {/g, 'async (recipeId: string, { dispatch }) => {');
-content = content.replace(/await removeRecipeFromMealPlanApi\(recipeId\);/g, 'await removeRecipeFromMealPlanApi(recipeId);\n  dispatch(fetchMealPlanner());');
+const replacement = `export const addRecipeToPlan = createAsyncThunk("mealPlanner/add", async (recipe: MealPlanRecipe, { dispatch }) => {
+  if (recipe.sourceType === 'ai' && typeof recipe.id === 'string' && isNaN(parseInt(recipe.id))) {
+    await addAiRecipeToMealPlanApi(recipe.originalRecipe);
+  } else {
+    await addRecipeToMealPlanApi(recipe.id);
+  }
+  dispatch(fetchMealPlanner());
+  return recipe;
+});`;
 
-content = content.replace(/async \(\) => {\r?\n  await clearMealPlanApi\(\);/g, 'async (_, { dispatch }) => {\n  await clearMealPlanApi();\n  dispatch(fetchMealPlanner());');
-
-fs.writeFileSync(file, content);
+if (code.includes(target)) {
+  code = code.replace(target, replacement);
+  fs.writeFileSync('src/store/slices/mealPlannerSlice.ts', code);
+  console.log("Success exact match");
+} else {
+  // try regex
+  const regex = /export const addRecipeToPlan = createAsyncThunk\("mealPlanner\/add", async \(recipe: MealPlanRecipe, \{ dispatch \}\) => \{[\s\S]*?return recipe;\r?\n\}\);/;
+  if (regex.test(code)) {
+    code = code.replace(regex, replacement);
+    fs.writeFileSync('src/store/slices/mealPlannerSlice.ts', code);
+    console.log("Success regex match");
+  } else {
+    console.log("Failed to match");
+  }
+}

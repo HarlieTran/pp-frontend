@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { MealPlanRecipe } from '@/types';
-import { fetchMealPlanFromApi, addRecipeToMealPlanApi, removeRecipeFromMealPlanApi, clearMealPlanApi } from '@/lib/meal-plan';
+import { fetchMealPlanFromApi, addRecipeToMealPlanApi, addAiRecipeToMealPlanApi, removeRecipeFromMealPlanApi, clearMealPlanApi } from '@/lib/meal-plan';
 
 interface MealPlannerState {
   plannedRecipes: MealPlanRecipe[];
@@ -17,7 +17,11 @@ export const fetchMealPlanner = createAsyncThunk("mealPlanner/fetch", async () =
 });
 
 export const addRecipeToPlan = createAsyncThunk("mealPlanner/add", async (recipe: MealPlanRecipe, { dispatch }) => {
-  await addRecipeToMealPlanApi(recipe.id);
+  if (recipe.sourceType === 'ai' && typeof recipe.id === 'string' && isNaN(parseInt(recipe.id))) {
+    await addAiRecipeToMealPlanApi(recipe.originalRecipe);
+  } else {
+    await addRecipeToMealPlanApi(recipe.id);
+  }
   dispatch(fetchMealPlanner());
   return recipe;
 });

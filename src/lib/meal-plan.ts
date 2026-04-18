@@ -9,6 +9,10 @@ export const addRecipeToMealPlanApi = async (recipeId: number | string): Promise
   await apiPost(`/meal-plan/${recipeId}`, {});
 };
 
+export const addAiRecipeToMealPlanApi = async (recipe: any): Promise<void> => {
+  await apiPost("/meal-plan/ai", recipe);
+};
+
 export const removeRecipeFromMealPlanApi = async (recipeId: number | string): Promise<void> => {
   await apiDelete(`/meal-plan/${recipeId}`);
 };

@@ -71,7 +71,7 @@ export const fetchRecipes = createAsyncThunk(
 
 export const fetchAiRecipes = createAsyncThunk(
   "recipes/fetchAiRecipes",
-  async (_, { getState }) => {
+  async (_, { getState, dispatch }) => {
     const state = getState() as RootState;
     const ingredients = state.ingredients.items.map((i) => ({
       name: i.name,
@@ -80,6 +80,11 @@ export const fetchAiRecipes = createAsyncThunk(
 
     const data = await apiPost("/recipes/generate-list", { ingredients });
     const signature = createIngredientSignature(ingredients.map(i => i.name));
+    
+    data.recipes.forEach((r: any) => {
+      dispatch(generateAiRecipeImage({ title: r.title, description: r.finalDish || r.summary || "" }));
+    });
+    
     return { recipes: data.recipes, signature };
   },
   {
@@ -92,6 +97,14 @@ export const fetchAiRecipes = createAsyncThunk(
       return nextSignature !== state.recipes.lastAiSignature;
     },
   },
+);
+
+export const generateAiRecipeImage = createAsyncThunk(
+  "recipes/generateAiRecipeImage",
+  async ({ title, description }: { title: string; description: string }) => {
+    const data = await apiPost("/recipes/generate-image", { title, description });
+    return { title, imageUrl: data.imageUrl };
+  }
 );
 
 export const fetchRecipeDetails = createAsyncThunk(
@@ -154,6 +167,12 @@ const recipesSlice = createSlice({
       .addCase(fetchAiRecipes.rejected, (state, action) => {
         state.aiStatus = "failed";
         state.aiError = action.error.message || "Failed to fetch AI recipes";
+      })
+      .addCase(generateAiRecipeImage.fulfilled, (state, action) => {
+        const recipe = state.aiRecipes.find(r => r.title === action.payload.title);
+        if (recipe && action.payload.imageUrl) {
+          recipe.imageUrl = action.payload.imageUrl;
+        }
       })
       .addCase(fetchRecipeDetails.pending, (state) => {
         state.detailsStatus = "loading";
