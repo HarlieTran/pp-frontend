@@ -14,7 +14,7 @@ import { FavoritesView } from '@/components/views/FavoritesView';
 import { MealPlannerView } from '@/components/views/MealPlannerView';
 import { useAppDispatch } from '@/store/hooks';
 import { fetchPantry, clearIngredients } from '@/store/slices/ingredientsSlice';
-import { fetchPreferences, clearPreferences, setPreferences } from '@/store/slices/preferencesSlice';
+import { clearPreferences, setPreferences } from '@/store/slices/preferencesSlice';
 import { clearFavorites, fetchFavorites } from '@/store/slices/favoritesSlice';
 import { fetchMealPlanner, resetMealPlanner } from '@/store/slices/mealPlannerSlice';
 import { getAuthToken, logout } from '@/lib/cognito';

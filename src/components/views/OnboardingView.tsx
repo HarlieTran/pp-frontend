@@ -60,54 +60,7 @@ const stepMeta = [
 
 const uiSpring = { type: "spring", stiffness: 500, damping: 35 } as const;
 
-type OnboardingPayload = {
-  dietaryPreference: Diet;
-  allergies: string[];
-  customAvoid: string[];
-  taste: { flavors: Flavor[]; spiceLevel: number };
-  goals: string[];
-};
 
-const emptyOnboarding = (): OnboardingPayload => ({
-  dietaryPreference: "No Restrictions",
-  allergies: [],
-  customAvoid: [],
-  taste: { flavors: [], spiceLevel: 2 },
-  goals: [],
-});
-
-const normalizeOnboarding = (raw: unknown): OnboardingPayload => {
-  const base = emptyOnboarding();
-  if (!raw || typeof raw !== "object") return base;
-  const value = raw as Partial<OnboardingPayload>;
-
-  const dietaryPreference =
-    typeof value.dietaryPreference === "string" && (dietOptions as string[]).includes(value.dietaryPreference)
-      ? (value.dietaryPreference as Diet)
-      : base.dietaryPreference;
-
-  const allergies = Array.isArray(value.allergies) ? value.allergies.filter((x): x is string => typeof x === "string") : [];
-  const customAvoid = Array.isArray(value.customAvoid)
-    ? value.customAvoid.filter((x): x is string => typeof x === "string")
-    : [];
-
-  const tasteRaw = (value.taste ?? {}) as Partial<OnboardingPayload["taste"]>;
-  const flavors = Array.isArray(tasteRaw.flavors)
-    ? tasteRaw.flavors.filter((x): x is Flavor => typeof x === "string" && (flavorOptions as string[]).includes(x))
-    : [];
-  const spiceLevelNum = Number(tasteRaw.spiceLevel ?? base.taste.spiceLevel);
-  const spiceLevel = Number.isFinite(spiceLevelNum) ? Math.max(0, Math.min(4, Math.round(spiceLevelNum))) : base.taste.spiceLevel;
-
-  const goals = Array.isArray(value.goals) ? value.goals.filter((x): x is string => typeof x === "string") : [];
-
-  return {
-    dietaryPreference,
-    allergies,
-    customAvoid,
-    taste: { flavors, spiceLevel },
-    goals,
-  };
-};
 
 const TogglePill = ({
   label,
@@ -194,22 +147,7 @@ export function OnboardingView({ onFinish }: { onFinish: () => void }) {
   const [goals, setGoals] = useState<string[]>([]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      try {
-        // We already have Redux state fetching it in App.tsx! But just in case:
-        const token = localStorage.getItem("auth_token"); // V2 artifact
-        // Actually we don't even need to fetch here if we rely on App.tsx which hydrates everything.
-        // But let's keep it safe and just wait for Redux to populate it or fetch directly.
-      } catch {
-        // Ignore; onboarding can start from defaults.
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    // We rely on App.tsx which hydrates everything into Redux.
   }, []);
 
   const header = useMemo(() => {

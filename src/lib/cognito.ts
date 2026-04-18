@@ -92,7 +92,7 @@ export function login(email: string, password: string): Promise<CognitoUserSessi
     cognitoUser.authenticateUser(authenticationDetails, {
       onSuccess: (result) => resolve(result),
       onFailure: (err) => reject(err),
-      newPasswordRequired: (userAttributes, requiredAttributes) => {
+      newPasswordRequired: () => {
         // Optional: handle forced password reset
         reject(new Error("New password required."));
       },
