@@ -20,7 +20,7 @@ export function AiRecipesView() {
     dispatch(fetchAiRecipes());
   };
 
-  const isPlanned = (title: string) => plannedRecipes.some(r => r.id === title && r.sourceType === 'ai');
+  const isPlanned = (title: string) => plannedRecipes.some(r => r.id === title);
 
   const toggleMealPlan = (recipe: AiRecipe) => {
     if (isPlanned(recipe.title)) {

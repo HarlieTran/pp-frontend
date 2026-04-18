@@ -108,7 +108,7 @@ export function RecipesView() {
 	    dispatch(clearSelectedRecipe());
 	  };
 
-	  const isPlanned = (id: number) => plannedRecipes.some(r => r.id === id.toString() && r.sourceType === 'api');
+	  const isPlanned = (id: number) => plannedRecipes.some(r => r.id === id.toString());
 	  const isFav = (id: number) => favorites.some((r) => r.id === id);
 	  const isDetailsLoading =
 	    isDetailsOpen &&

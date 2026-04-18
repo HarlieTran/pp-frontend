@@ -36,7 +36,7 @@ export function RecipeDetailsModal({
   const dispatch = useAppDispatch();
   const plannedRecipes = useAppSelector((state) => state.mealPlanner.plannedRecipes);
 
-  const isPlanned = recipe ? plannedRecipes.some(r => r.id === recipe.id.toString() && r.sourceType === 'api') : false;
+  const isPlanned = recipe ? plannedRecipes.some(r => r.id === recipe.id.toString()) : false;
 
   const toggleMealPlan = () => {
     if (!recipe) return;
