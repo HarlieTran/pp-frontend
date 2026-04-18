@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { FavoriteRecipe } from "@/lib/favorites";
-import { readFavorites, toggleFavorite as toggleFavoriteStorage } from "@/lib/favorites";
+import { readFavorites, toggleFavoriteApi } from "@/lib/favorites";
 
 type FavoritesState = {
   items: FavoriteRecipe[];
@@ -18,6 +18,14 @@ export const fetchFavorites = createAsyncThunk("favorites/fetch", async () => {
   return readFavorites();
 });
 
+export const toggleFavorite = createAsyncThunk(
+  "favorites/toggle",
+  async (recipe: FavoriteRecipe) => {
+    await toggleFavoriteApi(recipe);
+    return recipe;
+  }
+);
+
 export const favoritesSlice = createSlice({
   name: "favorites",
   initialState,
@@ -25,11 +33,6 @@ export const favoritesSlice = createSlice({
     clearFavorites: (state) => {
       state.items = [];
       state.status = "idle";
-      state.error = null;
-    },
-    toggleFavorite: (state, action: { payload: FavoriteRecipe }) => {
-      state.items = toggleFavoriteStorage(state.items, action.payload);
-      state.status = "succeeded";
       state.error = null;
     },
   },
@@ -46,10 +49,29 @@ export const favoritesSlice = createSlice({
       .addCase(fetchFavorites.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message || "Could not load favorites.";
+      })
+      .addCase(toggleFavorite.pending, (state, action) => {
+        const recipe = action.meta.arg;
+        const exists = state.items.some((r) => r.id === recipe.id);
+        if (exists) {
+          state.items = state.items.filter((r) => r.id !== recipe.id);
+        } else {
+          state.items.unshift(recipe);
+        }
+      })
+      .addCase(toggleFavorite.rejected, (state, action) => {
+        // Rollback optimistic update
+        const recipe = action.meta.arg;
+        const exists = state.items.some((r) => r.id === recipe.id);
+        if (exists) {
+          state.items = state.items.filter((r) => r.id !== recipe.id);
+        } else {
+          state.items.unshift(recipe);
+        }
+        state.error = action.error.message || "Failed to toggle favorite.";
       });
   },
 });
 
-export const { clearFavorites, toggleFavorite } = favoritesSlice.actions;
+export const { clearFavorites } = favoritesSlice.actions;
 export default favoritesSlice.reducer;
-
