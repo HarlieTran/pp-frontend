@@ -20,6 +20,9 @@ import { motion } from "framer-motion";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addRecipeToPlan, removeRecipeFromPlan } from "@/store/slices/mealPlannerSlice";
 import { cookRecipeThunk } from "@/store/slices/ingredientsSlice";
+import { useState } from "react";
+import { apiPost } from "@/lib/api";
+import { CookResultModal, type CookResult } from "./CookResultModal";
 
 interface RecipeDetailsProps {
   recipe: RecipeDetails | null;
@@ -36,6 +39,10 @@ export function RecipeDetailsModal({
 }: RecipeDetailsProps) {
   const dispatch = useAppDispatch();
   const plannedRecipes = useAppSelector((state) => state.mealPlanner.plannedRecipes);
+
+  const [cookResult, setCookResult] = useState<CookResult | null>(null);
+  const [isCookModalOpen, setIsCookModalOpen] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   const isPlanned = recipe ? plannedRecipes.some(r => r.id === recipe.id.toString()) : false;
 
@@ -59,13 +66,36 @@ export function RecipeDetailsModal({
     }
   };
 
-  const handleCook = async () => {
+  const handleCookPreview = async () => {
     if (!recipe) return;
-    await dispatch(cookRecipeThunk({ recipeId: recipe.id }));
-    onClose();
+    setIsConfirming(true);
+    try {
+      const res = await apiPost("/recipes/cook", { recipeId: recipe.id, dryRun: true });
+      setCookResult(res);
+      setIsCookModalOpen(true);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
+  const handleConfirmCook = async () => {
+    if (!recipe) return;
+    setIsConfirming(true);
+    try {
+      await dispatch(cookRecipeThunk({ recipeId: recipe.id })).unwrap();
+      setIsCookModalOpen(false);
+      onClose();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsConfirming(false);
+    }
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl p-0 overflow-hidden h-[90vh] md:h-[85vh] flex flex-col gap-0 border-0 rounded-2xl bg-background/95 backdrop-blur-md">
         {isLoading ? (
@@ -342,9 +372,10 @@ export function RecipeDetailsModal({
                           variant="default"
                           size="lg"
                           className="rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-8"
-                          onClick={handleCook}
+                          onClick={handleCookPreview}
+                          disabled={isConfirming}
                         >
-                          Cook & Update Pantry
+                          {isConfirming ? "Checking..." : "Cook & Update Pantry"}
                         </Button>
                         <Button
                           asChild
@@ -370,5 +401,15 @@ export function RecipeDetailsModal({
         )}
       </DialogContent>
     </Dialog>
+
+    <CookResultModal
+      isOpen={isCookModalOpen}
+      onClose={() => setIsCookModalOpen(false)}
+      onConfirm={handleConfirmCook}
+      result={cookResult}
+      recipeTitle={recipe?.title || ""}
+      isConfirming={isConfirming}
+    />
+    </>
   );
 }

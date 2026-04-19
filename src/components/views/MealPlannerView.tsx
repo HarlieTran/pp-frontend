@@ -8,6 +8,8 @@ import { CalendarDays, CheckCircle2, Circle, Trash2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { removeRecipeFromPlan, setShoppingListText, clearPlan } from "@/store/slices/mealPlannerSlice";
 import { cookRecipeThunk } from "@/store/slices/ingredientsSlice";
+import { apiPost } from "@/lib/api";
+import { CookResultModal, type CookResult } from "../CookResultModal";
 
 export function MealPlannerView() {
   const dispatch = useAppDispatch();
@@ -15,6 +17,10 @@ export function MealPlannerView() {
   const pantryIngredients = useAppSelector((state) => state.ingredients.items);
 
   const [copied, setCopied] = useState(false);
+  const [activeRecipe, setActiveRecipe] = useState<any>(null);
+  const [cookResult, setCookResult] = useState<CookResult | null>(null);
+  const [isCookModalOpen, setIsCookModalOpen] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   const { missing, have } = useMemo(() => {
     const requiredMap = new Map<string, { quantities: string[] }>();
@@ -62,16 +68,45 @@ export function MealPlannerView() {
     dispatch(removeRecipeFromPlan(id));
   };
 
-  const handleCook = async (recipe: any) => {
-    if (recipe.sourceType === 'api') {
-      await dispatch(cookRecipeThunk({ recipeId: Number(recipe.id) }));
-    } else {
-      await dispatch(cookRecipeThunk({ ingredients: recipe.requiredIngredients }));
+  const handleCookPreview = async (recipe: any) => {
+    setActiveRecipe(recipe);
+    setIsConfirming(true);
+    try {
+      const payload = recipe.sourceType === 'api' 
+        ? { recipeId: Number(recipe.id), dryRun: true }
+        : { ingredients: recipe.requiredIngredients, dryRun: true };
+      
+      const res = await apiPost("/recipes/cook", payload);
+      setCookResult(res);
+      setIsCookModalOpen(true);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsConfirming(false);
     }
-    dispatch(removeRecipeFromPlan(recipe.id));
+  };
+
+  const handleConfirmCook = async () => {
+    if (!activeRecipe) return;
+    setIsConfirming(true);
+    try {
+      if (activeRecipe.sourceType === 'api') {
+        await dispatch(cookRecipeThunk({ recipeId: Number(activeRecipe.id) })).unwrap();
+      } else {
+        await dispatch(cookRecipeThunk({ ingredients: activeRecipe.requiredIngredients })).unwrap();
+      }
+      dispatch(removeRecipeFromPlan(activeRecipe.id));
+      setIsCookModalOpen(false);
+      setActiveRecipe(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsConfirming(false);
+    }
   };
 
   return (
+    <>
     <motion.div
       className="flex flex-col h-[calc(100vh-10rem)] space-y-6"
       initial={{ opacity: 0, y: 20 }}
@@ -144,9 +179,10 @@ export function MealPlannerView() {
                             <Button 
                               size="sm" 
                               className="rounded-full bg-[#10120f] hover:bg-[#10120f]/80 text-white font-bold"
-                              onClick={() => handleCook(recipe)}
+                              onClick={() => handleCookPreview(recipe)}
+                              disabled={isConfirming && activeRecipe?.id === recipe.id}
                             >
-                              Cook Recipe
+                              {isConfirming && activeRecipe?.id === recipe.id ? "Checking..." : "Cook Recipe"}
                             </Button>
                           </div>
                         </div>
@@ -215,5 +251,15 @@ export function MealPlannerView() {
         </ScrollArea>
       </div>
     </motion.div>
+
+    <CookResultModal
+      isOpen={isCookModalOpen}
+      onClose={() => setIsCookModalOpen(false)}
+      onConfirm={handleConfirmCook}
+      result={cookResult}
+      recipeTitle={activeRecipe?.title || ""}
+      isConfirming={isConfirming}
+    />
+    </>
   );
 }
