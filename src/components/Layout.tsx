@@ -67,7 +67,7 @@ function SidebarNavSection({
   onTabChange: (tab: AppTab) => void;
 }) {
   return (
-    <div>
+    <div className="px-4">
       <div className="space-y-1">
         {items.map((item) => {
           const isActive = activeTab === item.id;
@@ -148,12 +148,12 @@ export function Layout({ children, activeTab, onTabChange, onSignOut }: LayoutPr
   }, [isUserMenuOpen]);
 
   const sidebarContent = (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col w-full">
       <div className="relative px-4 pt-4" ref={userMenuRef}>
         <button
           type="button"
           onClick={() => setIsUserMenuOpen((value) => !value)}
-          className="flex w-full items-center gap-3 rounded-full border border-[#e8eaec] bg-white px-3 py-2 text-left transition hover:bg-[#dce9dd]"
+          className="flex w-full items-center gap-3 rounded-[50px] border border-[#e8eaec] bg-white p-2 pr-4 text-left transition hover:bg-[#dce9dd]"
         >
           <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#dce9dd] text-sm font-medium text-[#10120f]">
             {initials}
@@ -230,7 +230,7 @@ export function Layout({ children, activeTab, onTabChange, onSignOut }: LayoutPr
                       <Menu className="h-5 w-5" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="w-[310px] border-[#e8eaec] bg-[#10120f] p-0">
+                  <SheetContent side="left" className="w-[310px] border-[#e8eaec] bg-[#10120f] p-0" showCloseButton={false}>
                     {sidebarContent}
                   </SheetContent>
                 </Sheet>
@@ -238,7 +238,7 @@ export function Layout({ children, activeTab, onTabChange, onSignOut }: LayoutPr
                 <div>
 	                  <h1 className="page-title text-[#10120f]">
 	                    {activeTab === "dashboard"
-	                      ? `Welcome, ${user.name?.trim().split(/\s+/)[0] || "there"}`
+	                      ? `Welcome, ${user.name?.trim().split(/\s+/)[0] || user.email?.split('@')[0] || "User"}`
 	                      : activeTab === "profile"
 	                        ? "Settings"
 	                        : sidebarNav.find((item) => item.id === activeTab)?.label || "Workspace"}

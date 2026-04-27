@@ -33,6 +33,7 @@ export const fetchPantry = createAsyncThunk("ingredients/fetchPantry", async () 
     ...item,
     name: item.rawName || item.canonicalName || "Unknown",
     quantity: String(item.quantity || "1"),
+    category: getItemCategory({ category: item.category, name: item.rawName || item.canonicalName || "Unknown" })
   })) as Ingredient[];
 });
 
@@ -45,17 +46,29 @@ export const savePantry = createAsyncThunk("ingredients/savePantry", async () =>
 export const addIngredient = createAsyncThunk(
   "ingredients/addIngredient",
   async (payload: AddIngredientPayload) => {
+    let finalExpiryDate = payload.expiryDate;
+    if (!finalExpiryDate) {
+      const category = categorizeIngredient(payload.name);
+      const lifespanDays = payload.inFreezer ? 180 : (CATEGORY_LIFESPAN_DAYS[category] || 30);
+      const date = new Date();
+      date.setDate(date.getDate() + lifespanDays);
+      finalExpiryDate = date.toISOString().split('T')[0];
+    }
+
     const data = await apiPost("/me/pantry", {
       rawName: payload.name.trim(),
       quantity: Number(payload.quantity) || 1,
       unit: payload.unit || "pcs",
       notes: payload.notes,
-      expiryDate: payload.expiryDate,
+      expiryDate: finalExpiryDate,
     });
+    
+    const name = data.rawName || data.canonicalName || payload.name;
     return {
       ...data,
-      name: data.rawName || data.canonicalName || payload.name,
+      name,
       quantity: String(data.quantity || "1"),
+      category: getItemCategory({ category: data.category, name })
     } as Ingredient;
   }
 );
@@ -98,6 +111,33 @@ export const categorizeIngredient = (name: string): string => {
     }
   }
   return "Other";
+};
+
+export const CATEGORY_LIFESPAN_DAYS: Record<string, number> = {
+  "Produce": 14,
+  "Condiments & Oils": 180,
+  "Dairy & Eggs": 14,
+  "Meat & Poultry": 4,
+  "Spices & Herbs": 365,
+  "Seafood": 3,
+};
+
+export const mapBackendCategory = (category: string) => {
+  const lower = category.toLowerCase();
+  if (lower === "produce") return "Produce";
+  if (lower === "dairy") return "Dairy & Eggs";
+  if (lower === "meat") return "Meat & Poultry";
+  if (lower === "seafood") return "Seafood";
+  if (lower === "spices") return "Spices & Herbs";
+  if (lower === "condiments") return "Condiments & Oils";
+  return "Other";
+};
+
+export const getItemCategory = (item: { category?: string, name: string }) => {
+  if (item.category && item.category.toLowerCase() !== "other") {
+    return mapBackendCategory(item.category);
+  }
+  return categorizeIngredient(item.name);
 };
 
 export const ingredientsSlice = createSlice({

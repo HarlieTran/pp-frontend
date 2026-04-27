@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { categorizeIngredient, removeIngredient, savePantry } from "@/store/slices/ingredientsSlice";
+import { CATEGORY_LIFESPAN_DAYS, removeIngredient, savePantry } from "@/store/slices/ingredientsSlice";
 import { AddPantryItemModal } from "@/components/AddPantryItemModal";
 import type { Ingredient } from "@/types";
 
@@ -32,14 +32,7 @@ const CATEGORY_CARDS = [
 const ITEM_LIMIT = 6;
 const PANTRY_TABLE_GRID = "grid-cols-[124px_minmax(0,1.3fr)_minmax(120px,0.8fr)_minmax(280px,1.2fr)_32px]";
 
-const CATEGORY_LIFESPAN_DAYS: Record<string, number> = {
-  "Produce": 14,
-  "Condiments & Oils": 180,
-  "Dairy & Eggs": 14,
-  "Meat & Poultry": 4,
-  "Spices & Herbs": 365,
-  "Seafood": 3,
-};
+
 
 const getDaysUntilExpiry = (expiryDate?: string) => {
   if (!expiryDate) return null;
@@ -64,7 +57,7 @@ const getExpiryProgress = (item: Ingredient) => {
   if (daysLeft === null) return 6;
   if (daysLeft <= 0) return 100;
 
-  const defaultWindow = CATEGORY_LIFESPAN_DAYS[getItemCategory(item)] ?? 30;
+  const defaultWindow = CATEGORY_LIFESPAN_DAYS[item.category || "Other"] ?? 30;
   const freshnessRatio = Math.max(0, Math.min(1, daysLeft / defaultWindow));
   return Math.max(8, Math.round((1 - freshnessRatio) * 100));
 };
@@ -82,23 +75,7 @@ const getQuantityLabel = (item: Ingredient) => {
   return parts.length > 0 ? parts.join(" ") : "1 Item";
 };
 
-const mapBackendCategory = (category: string) => {
-  const lower = category.toLowerCase();
-  if (lower === "produce") return "Produce";
-  if (lower === "dairy") return "Dairy & Eggs";
-  if (lower === "meat") return "Meat & Poultry";
-  if (lower === "seafood") return "Seafood";
-  if (lower === "spices") return "Spices & Herbs";
-  if (lower === "condiments") return "Condiments & Oils";
-  return "Other";
-};
 
-const getItemCategory = (item: Ingredient) => {
-  if (item.category && item.category.toLowerCase() !== "other") {
-    return mapBackendCategory(item.category);
-  }
-  return categorizeIngredient(item.name);
-};
 
 export function PantryView({ onGoToScan }: PantryViewProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -164,7 +141,7 @@ export function PantryView({ onGoToScan }: PantryViewProps) {
   const categorySections = useMemo(
     () =>
       CATEGORY_CARDS.map((section) => {
-        const items = ingredients.filter((item) => getItemCategory(item) === section.category);
+        const items = ingredients.filter((item) => (item.category || "Other") === section.category);
         return {
           ...section,
           items,

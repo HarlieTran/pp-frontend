@@ -137,7 +137,7 @@ export function RecipesView() {
 
   return (
     <motion.div
-      className="space-y-6 h-[calc(100vh-10rem)]"
+      className="flex flex-col gap-6 h-[calc(100vh-8rem)]"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
@@ -216,7 +216,7 @@ export function RecipesView() {
       )}
 
       {/* Main Content Area - Full width now */}
-      <div className="h-full min-h-0">
+      <div className="flex-1 min-h-0">
         <ScrollArea className="h-full pr-4">
           {status === "loading" && recipes.length === 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-20">
