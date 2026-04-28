@@ -10,6 +10,10 @@ import { removeRecipeFromPlan, setShoppingListText, clearPlan } from "@/store/sl
 import { cookRecipeThunk } from "@/store/slices/ingredientsSlice";
 import { apiPost } from "@/lib/api";
 import { CookResultModal, type CookResult } from "../CookResultModal";
+import { MealPlannerCalendar } from "./../MealPlannerCalendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format, addDays } from "date-fns";
+import { addRecipeToPlan } from "@/store/slices/mealPlannerSlice";
 
 export function MealPlannerView() {
   const dispatch = useAppDispatch();
@@ -62,6 +66,14 @@ export function MealPlannerView() {
     dispatch(setShoppingListText(text));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const today = new Date();
+  const dateOptions = Array.from({ length: 7 }).map((_, i) => addDays(today, i));
+
+  const handleAssignDate = (recipe: any, dateString: string) => {
+    // value "none" maps to empty string for clearing
+    dispatch(addRecipeToPlan({ ...recipe, date: dateString === "none" ? "" : dateString }));
   };
 
   const handleRemove = (id: string) => {
@@ -134,11 +146,15 @@ export function MealPlannerView() {
 
       <div className="flex-1 min-h-0">
         <ScrollArea className="h-full pr-4">
-          <div className="grid lg:grid-cols-12 gap-8 pb-20">
-            {/* Left Column: Planned Recipes */}
-            <div className="lg:col-span-7 flex flex-col space-y-4">
-              <h3 className="text-xl font-bold mb-2">Planned Meals ({plannedRecipes.length})</h3>
-              <div className="min-h-[200px] rounded-2xl border border-[#e8eaec] bg-white p-4">
+          <div className="flex flex-col gap-8 pb-20">
+            {/* Top Row: Calendar */}
+            <MealPlannerCalendar />
+
+            <div className="grid lg:grid-cols-12 gap-8">
+              {/* Left Column: Planned Recipes */}
+              <div className="lg:col-span-7 flex flex-col space-y-4">
+                <h3 className="text-xl font-bold mb-2">Planned Meals ({plannedRecipes.length})</h3>
+                <div className="min-h-[200px] rounded-2xl border border-[#e8eaec] bg-white p-4">
                 {plannedRecipes.length === 0 ? (
                   <div className="m-2 flex h-48 flex-col items-center justify-center rounded-xl border border-border/60 bg-muted/20 text-muted-foreground">
                     <CalendarDays className="h-12 w-12 mb-4 opacity-20" />
@@ -173,16 +189,33 @@ export function MealPlannerView() {
                             )}
                           </div>
                           <div className="flex items-center justify-between mt-4">
-                            <p className="text-sm text-muted-foreground font-medium">
-                              {recipe.requiredIngredients.length} Ingredients Checked
-                            </p>
+                            <Select 
+                              value={recipe.date || "none"} 
+                              onValueChange={(val) => handleAssignDate(recipe, val)}
+                            >
+                              <SelectTrigger className="w-[140px] h-8 text-xs font-medium border-[#e8eaec]">
+                                <SelectValue placeholder="Assign Day" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white border-[#e8eaec]">
+                                <SelectItem value="none">No Date</SelectItem>
+                                {dateOptions.map((day) => {
+                                  const ds = day.toISOString().split('T')[0];
+                                  return (
+                                    <SelectItem key={ds} value={ds}>
+                                      {format(day, "EEE, MMM d")}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                            
                             <Button 
                               size="sm" 
                               className="rounded-full bg-[#10120f] hover:bg-[#10120f]/80 text-white font-bold"
                               onClick={() => handleCookPreview(recipe)}
                               disabled={isConfirming && activeRecipe?.id === recipe.id}
                             >
-                              {isConfirming && activeRecipe?.id === recipe.id ? "Checking..." : "Cook Recipe"}
+                              {isConfirming && activeRecipe?.id === recipe.id ? "Checking..." : "Cook"}
                             </Button>
                           </div>
                         </div>
@@ -245,6 +278,7 @@ export function MealPlannerView() {
                 </div>
               </div>
             )}
+              </div>
             </div>
           </div>
         </div>

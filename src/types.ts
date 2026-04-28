@@ -128,6 +128,7 @@ export interface MealPlanRecipe {
   sourceType: 'api' | 'ai';
   title: string;
   image?: string;
+  date?: string;
   requiredIngredients: { name: string; quantity: string }[];
   originalRecipe: Recipe | AiRecipe;
 }

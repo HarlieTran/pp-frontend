@@ -18,9 +18,9 @@ export const fetchMealPlanner = createAsyncThunk("mealPlanner/fetch", async () =
 
 export const addRecipeToPlan = createAsyncThunk("mealPlanner/add", async (recipe: MealPlanRecipe, { dispatch }) => {
   if (recipe.sourceType === 'ai' && typeof recipe.id === 'string' && isNaN(parseInt(recipe.id))) {
-    await addAiRecipeToMealPlanApi(recipe.originalRecipe);
+    await addAiRecipeToMealPlanApi(recipe.originalRecipe, recipe.date);
   } else {
-    await addRecipeToMealPlanApi(recipe.id);
+    await addRecipeToMealPlanApi(recipe.id, recipe.date);
   }
   dispatch(fetchMealPlanner());
   return recipe;
@@ -54,8 +54,10 @@ export const mealPlannerSlice = createSlice({
       })
       // add
       .addCase(addRecipeToPlan.pending, (state, action) => {
-        const exists = state.plannedRecipes.find(r => r.id === action.meta.arg.id);
-        if (!exists) {
+        const existingIndex = state.plannedRecipes.findIndex(r => r.id === action.meta.arg.id);
+        if (existingIndex >= 0) {
+          state.plannedRecipes[existingIndex] = action.meta.arg;
+        } else {
           state.plannedRecipes.push(action.meta.arg);
         }
       })
