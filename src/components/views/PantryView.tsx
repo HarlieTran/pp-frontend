@@ -30,7 +30,7 @@ const CATEGORY_CARDS = [
 ] as const;
 
 const ITEM_LIMIT = 6;
-const PANTRY_TABLE_GRID = "grid-cols-[124px_minmax(0,1.3fr)_minmax(120px,0.8fr)_minmax(280px,1.2fr)_32px]";
+const PANTRY_TABLE_GRID = "grid-cols-[80px_minmax(180px,1.3fr)_minmax(100px,0.8fr)_minmax(200px,1.2fr)_32px]";
 
 
 
@@ -227,66 +227,70 @@ export function PantryView({ onGoToScan }: PantryViewProps) {
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
-                    {section.totalCount > 0 && (
-                      <div className={`bg-black/[0.01] px-8 py-3 sm:px-9 grid ${PANTRY_TABLE_GRID} items-center gap-4 text-[0.78rem] font-medium tracking-[0.04em] text-[rgba(16,18,15,0.48)] border-b border-[#e8eaec]`}>
-                        <span className="justify-self-start">Number</span>
-                        <span className="justify-self-start">Items</span>
-                        <span className="justify-self-start">Quantity</span>
-                        <span className="justify-self-start">Expires</span>
-                        <span className="justify-self-center"> </span>
+                    <div className="overflow-x-auto">
+                      <div className="min-w-[700px]">
+                        {section.totalCount > 0 && (
+                          <div className={`bg-black/[0.01] px-8 py-3 sm:px-9 grid ${PANTRY_TABLE_GRID} items-center gap-4 text-[0.78rem] font-medium tracking-[0.04em] text-[rgba(16,18,15,0.48)] border-b border-[#e8eaec]`}>
+                            <span className="justify-self-start">Number</span>
+                            <span className="justify-self-start">Items</span>
+                            <span className="justify-self-start">Quantity</span>
+                            <span className="justify-self-start">Expires</span>
+                            <span className="justify-self-center"> </span>
+                          </div>
+                        )}
+
+                        <div className="divide-y divide-[#e8eaec]">
+                          {visibleItems.length > 0 ? (
+                            visibleItems.map((item, index) => {
+                              const progress = getExpiryProgress(item);
+                              const progressColor = getProgressColor(item);
+                              return (
+                                <div
+                                  key={item.id}
+                                  className={`grid ${PANTRY_TABLE_GRID} items-center gap-4 px-8 py-4 sm:px-9 hover:bg-black/[0.01] transition-colors`}
+                                >
+                                  <span className="justify-self-start text-[0.9rem] font-medium text-[rgba(16,18,15,0.52)]">
+                                    {String(index + 1).padStart(2, "0")}
+                                  </span>
+
+                                  <div className="flex min-w-0 items-center gap-4 pl-2">
+                                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#00c755] text-[1rem] font-semibold text-white">
+                                      {item.name.trim().charAt(0).toUpperCase() || "P"}
+                                    </span>
+                                    <div className="min-w-0">
+                                      <p className="truncate text-[0.92rem] font-normal text-[#10120f] capitalize">{item.name}</p>
+                                      {item.notes ? <p className="truncate text-[0.82rem] text-[rgba(16,18,15,0.48)] mt-0.5">{item.notes}</p> : null}
+                                    </div>
+                                  </div>
+
+                                  <p className="justify-self-start text-[0.92rem] font-normal text-[rgba(16,18,15,0.82)] capitalize">{getQuantityLabel(item)}</p>
+
+                                  <div className="flex min-w-0 items-center gap-3 justify-self-start">
+                                    <div className="h-[5px] w-full min-w-[140px] max-w-[180px] overflow-hidden rounded-full bg-[#e8eaec]">
+                                      <div
+                                        className="h-full rounded-full transition-all duration-300"
+                                        style={{ width: `${progress}%`, backgroundColor: progressColor }}
+                                      />
+                                    </div>
+                                    <span className="min-w-[84px] text-left text-[0.92rem] font-normal text-[rgba(16,18,15,0.62)]">
+                                      {getExpiryLabel(item.expiryDate)}
+                                    </span>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    className="grid h-8 w-8 justify-self-center place-items-center rounded-full text-[rgba(16,18,15,0.34)] transition hover:bg-black/[0.05] hover:text-[#10120f]"
+                                    onClick={() => setSelectedItem(item)}
+                                    aria-label={`Open actions for ${item.name}`}
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              );
+                            })
+                          ) : null}
+                        </div>
                       </div>
-                    )}
-
-                    <div className="divide-y divide-[#e8eaec]">
-                      {visibleItems.length > 0 ? (
-                        visibleItems.map((item, index) => {
-                          const progress = getExpiryProgress(item);
-                          const progressColor = getProgressColor(item);
-                          return (
-                            <div
-                              key={item.id}
-                              className={`grid ${PANTRY_TABLE_GRID} items-center gap-4 px-8 py-4 sm:px-9 hover:bg-black/[0.01] transition-colors`}
-                            >
-                              <span className="justify-self-start text-[0.9rem] font-medium text-[rgba(16,18,15,0.52)]">
-                                {String(index + 1).padStart(2, "0")}
-                              </span>
-
-                              <div className="flex min-w-0 items-center gap-4 pl-2">
-                                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#00c755] text-[1rem] font-semibold text-white">
-                                  {item.name.trim().charAt(0).toUpperCase() || "P"}
-                                </span>
-                                <div className="min-w-0">
-                                  <p className="truncate text-[0.92rem] font-normal text-[#10120f] capitalize">{item.name}</p>
-                                  {item.notes ? <p className="truncate text-[0.82rem] text-[rgba(16,18,15,0.48)] mt-0.5">{item.notes}</p> : null}
-                                </div>
-                              </div>
-
-                              <p className="justify-self-start text-[0.92rem] font-normal text-[rgba(16,18,15,0.82)] capitalize">{getQuantityLabel(item)}</p>
-
-                              <div className="flex min-w-0 items-center gap-3 justify-self-start">
-                                <div className="h-[5px] w-full min-w-[140px] max-w-[180px] overflow-hidden rounded-full bg-[#e8eaec]">
-                                  <div
-                                    className="h-full rounded-full transition-all duration-300"
-                                    style={{ width: `${progress}%`, backgroundColor: progressColor }}
-                                  />
-                                </div>
-                                <span className="min-w-[84px] text-left text-[0.92rem] font-normal text-[rgba(16,18,15,0.62)]">
-                                  {getExpiryLabel(item.expiryDate)}
-                                </span>
-                              </div>
-
-                              <button
-                                type="button"
-                                className="grid h-8 w-8 justify-self-center place-items-center rounded-full text-[rgba(16,18,15,0.34)] transition hover:bg-black/[0.05] hover:text-[#10120f]"
-                                onClick={() => setSelectedItem(item)}
-                                aria-label={`Open actions for ${item.name}`}
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                              </button>
-                            </div>
-                          );
-                        })
-                      ) : null}
                     </div>
       
                     {hasMoreItems ? (

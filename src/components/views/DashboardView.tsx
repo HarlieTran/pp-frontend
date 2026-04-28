@@ -388,32 +388,36 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
         </div>
 
         <div className="mt-6 overflow-hidden rounded-[24px] border border-[#e8eaec] bg-white">
-          <div className="grid grid-cols-[2.2fr_1.2fr_1fr_1.2fr] gap-4 border-b border-[#e8eaec] px-5 py-4 text-sm font-medium text-[rgba(16,18,15,0.48)]">
-            <span>Name</span>
-            <span>Category</span>
-            <span>Quantity</span>
-            <span>Expiry</span>
-          </div>
-
-          {recentItems.length > 0 ? (
-            recentItems.map((item, index) => (
-              <div
-                key={item.id}
-                className={`grid grid-cols-[2.2fr_1.2fr_1fr_1.2fr] gap-4 px-5 py-4 text-sm text-[#10120f] ${
-                  index !== recentItems.length - 1 ? "border-b border-[#e8eaec]" : ""
-                }`}
-              >
-                <span className="font-medium">{item.name}</span>
-                <span className="text-[rgba(16,18,15,0.62)]">{item.category || "Other"}</span>
-                <span>{[item.quantity, item.unit].filter(Boolean).join(" ") || "1 Item"}</span>
-                <span className="text-[rgba(16,18,15,0.62)]">{item.expiryDate || "No Date"}</span>
+          <div className="overflow-x-auto">
+            <div className="min-w-[600px]">
+              <div className="grid grid-cols-[2.2fr_1.2fr_1fr_1.2fr] gap-4 border-b border-[#e8eaec] px-5 py-4 text-sm font-medium text-[rgba(16,18,15,0.48)]">
+                <span>Name</span>
+                <span>Category</span>
+                <span>Quantity</span>
+                <span>Expiry</span>
               </div>
-            ))
-          ) : (
-            <div className="px-5 py-10 text-sm text-[rgba(16,18,15,0.58)]">
-              Add pantry items and your five most recent additions will appear here.
+
+              {recentItems.length > 0 ? (
+                recentItems.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className={`grid grid-cols-[2.2fr_1.2fr_1fr_1.2fr] gap-4 px-5 py-4 text-sm text-[#10120f] ${
+                      index !== recentItems.length - 1 ? "border-b border-[#e8eaec]" : ""
+                    }`}
+                  >
+                    <span className="font-medium">{item.name}</span>
+                    <span className="text-[rgba(16,18,15,0.62)]">{item.category || "Other"}</span>
+                    <span>{[item.quantity, item.unit].filter(Boolean).join(" ") || "1 Item"}</span>
+                    <span className="text-[rgba(16,18,15,0.62)]">{item.expiryDate || "No Date"}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="px-5 py-10 text-sm text-[rgba(16,18,15,0.58)] text-center">
+                  Add pantry items and your five most recent additions will appear here.
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
       </section>
